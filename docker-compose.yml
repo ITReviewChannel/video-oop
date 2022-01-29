@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./:/app
+      - ./docker/nginx/default.nginx:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - php
+    networks:
+      - default
+  php:
+    build:
+      context: ./docker/php
+    volumes:
+      - ./:/app
+      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+      - PHP_IDE_CONFIG=serverName=mytestservername
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      - MYSQL_DATABASE=my_database_name
+      - MYSQL_USER=my_user_name
+      - MYSQL_PASSWORD=my_user_password
+      - MYSQL_ROOT_PASSWORD=my_root_password
+      - MYSQL_ROOT_HOST:%
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
